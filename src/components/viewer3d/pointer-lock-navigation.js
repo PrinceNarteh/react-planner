@@ -1,35 +1,44 @@
-import PointerLockControls from './libs/pointer-lock-controls';
+import PointerLockControls from "./libs/pointer-lock-controls";
+import * as THREE from "three";
 
 export function initPointerLock(camera, rendererElement) {
+  let havePointerLock =
+    "pointerLockElement" in document ||
+    "mozPointerLockElement" in document ||
+    "webkitPointerLockElement" in document;
 
-  let havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
-
-  let pointerlockchange = event => {
+  let pointerlockchange = (event) => {
     controls.enabled = !controls.enabled;
   };
 
-  let requestPointerLockEvent = event => {
-    document.body.requestPointerLock = document.body.requestPointerLock ||
+  let requestPointerLockEvent = (event) => {
+    document.body.requestPointerLock =
+      document.body.requestPointerLock ||
       document.body.mozRequestPointerLock ||
       document.body.webkitRequestPointerLock;
     document.body.requestPointerLock();
   };
 
   if (havePointerLock) {
-
-    document.addEventListener('pointerlockchange', pointerlockchange, false);
-    document.addEventListener('mozpointerlockchange', pointerlockchange, false);
-    document.addEventListener('webkitpointerlockchange', pointerlockchange, false);
-    rendererElement.addEventListener('click', requestPointerLockEvent);
-
+    document.addEventListener("pointerlockchange", pointerlockchange, false);
+    document.addEventListener("mozpointerlockchange", pointerlockchange, false);
+    document.addEventListener(
+      "webkitpointerlockchange",
+      pointerlockchange,
+      false
+    );
+    rendererElement.addEventListener("click", requestPointerLockEvent);
   } else {
-    console.log('Your browser doesn\'t seem to support Pointer Lock API');
+    console.log("Your browser doesn't seem to support Pointer Lock API");
   }
 
   let controls = new PointerLockControls(camera);
-  return {controls, pointerlockChangeEvent: pointerlockchange, requestPointerLockEvent};
+  return {
+    controls,
+    pointerlockChangeEvent: pointerlockchange,
+    requestPointerLockEvent,
+  };
 }
-
 
 /* Funzione per il calcolo delle collisioni con gli oggetti contenuti all'interno di un array.
  * L'idea è quella di utilizzare il ray casting. Per tenere conto del fatto che ci possiamo
@@ -37,40 +46,39 @@ export function initPointerLock(camera, rendererElement) {
  * quale l'oggetto del pointer lock è orientato. */
 
 function collision(controls, collisionArray) {
-
   let rotationMatrix;
-  let cameraDirection = controls.getDirection(new THREE.Vector3(0, 0, 0)).clone();
+  let cameraDirection = controls
+    .getDirection(new THREE.Vector3(0, 0, 0))
+    .clone();
 
   if (controls.moveForward()) {
     // Nothing to do!
-  }
-  else if (controls.moveBackward()) {
+  } else if (controls.moveBackward()) {
     rotationMatrix = new THREE.Matrix4();
-    rotationMatrix.makeRotationY(180 * Math.PI / 180);
-  }
-  else if (controls.moveLeft()) {
+    rotationMatrix.makeRotationY((180 * Math.PI) / 180);
+  } else if (controls.moveLeft()) {
     rotationMatrix = new THREE.Matrix4();
-    rotationMatrix.makeRotationY(90 * Math.PI / 180);
-  }
-  else if (controls.moveRight()) {
+    rotationMatrix.makeRotationY((90 * Math.PI) / 180);
+  } else if (controls.moveRight()) {
     rotationMatrix = new THREE.Matrix4();
-    rotationMatrix.makeRotationY((360 - 90) * Math.PI / 180);
-  }
-  else return;
+    rotationMatrix.makeRotationY(((360 - 90) * Math.PI) / 180);
+  } else return;
 
   if (rotationMatrix !== undefined) {
     cameraDirection.applyMatrix4(rotationMatrix);
   }
-  let rayCaster = new THREE.Raycaster(controls.getObject().position, cameraDirection.normalize());
+  let rayCaster = new THREE.Raycaster(
+    controls.getObject().position,
+    cameraDirection.normalize()
+  );
   let intersects = rayCaster.intersectObjects(collisionArray, true);
 
-  if ((intersects.length > 0 && intersects[0].distance < 10)) {
+  if (intersects.length > 0 && intersects[0].distance < 10) {
     return true;
   }
 
   return false;
 }
-
 
 /* Funzione meno raffinata per il calcolo delle collisioni.
  * In pratica viene definita una bounding geometry (in questo caso la skymap) e poi vengono fatti
@@ -99,7 +107,6 @@ function collision(controls, collisionArray) {
  * (vedi esempio pointer lock) */
 
 function translateY(controls, ray, objects) {
-
   controls.isOnObject(false);
   ray.ray.origin.copy(controls.getObject().position);
   ray.ray.origin.y -= 10;
@@ -110,7 +117,6 @@ function translateY(controls, ray, objects) {
       controls.isOnObject(true);
     }
   }
-
 }
 
 /* Queste funzioni bloccano o sbloccano il movimento del controller (utili in caso di collisione) */
@@ -118,14 +124,11 @@ function translateY(controls, ray, objects) {
 function lockDirection(controls) {
   if (controls.moveForward()) {
     controls.lockMoveForward(true);
-  }
-  else if (controls.moveBackward()) {
+  } else if (controls.moveBackward()) {
     controls.lockMoveBackward(true);
-  }
-  else if (controls.moveLeft()) {
+  } else if (controls.moveLeft()) {
     controls.lockMoveLeft(true);
-  }
-  else if (controls.moveRight()) {
+  } else if (controls.moveRight()) {
     controls.lockMoveRight(true);
   }
 }

@@ -1,14 +1,14 @@
-const localStorage = window.hasOwnProperty('localStorage') ? window.localStorage : false;
-import { loadProject } from '../actions/project-actions';
+import { loadProject } from "../actions/project-actions";
+const localStorage = window.hasOwnProperty("localStorage")
+  ? window.localStorage
+  : false;
 
 const TIMEOUT_DELAY = 500;
 
 let timeout = null;
 
 export default function autosave(autosaveKey, delay) {
-
   return (store, stateExtractor) => {
-
     delay = delay || TIMEOUT_DELAY;
 
     if (!autosaveKey) return;

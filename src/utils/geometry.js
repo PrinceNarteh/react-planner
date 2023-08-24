@@ -5,8 +5,8 @@
  *  @param {number} y1 Vertex 1 y
  *  @return {number}
  */
-import {toFixedFloat, fAbs} from './math.js';
-import {EPSILON} from '../constants';
+import { toFixedFloat, fAbs } from "./math.js";
+import { EPSILON } from "../constants";
 
 export function compareVertices(v0, v1) {
   return v0.x === v1.x ? v0.y - v1.y : v0.x - v1.x;
@@ -28,34 +28,33 @@ export function pointsDistance(x0, y0, x1, y1) {
   let diff_x = x0 - x1;
   let diff_y = y0 - y1;
 
-  return Math.sqrt((diff_x * diff_x) + (diff_y * diff_y));
+  return Math.sqrt(diff_x * diff_x + diff_y * diff_y);
 }
 
 export function verticesDistance(v1, v2) {
-
-  let {x: x0, y: y0} = v1;
-  let {x: x1, y: y1} = v2;
+  let { x: x0, y: y0 } = v1;
+  let { x: x1, y: y1 } = v2;
 
   return pointsDistance(x0, y0, x1, y1);
 }
 
 export function horizontalLine(y) {
-  return {a: 0, b: 1, c: -y};
+  return { a: 0, b: 1, c: -y };
 }
 
 export function verticalLine(x) {
-  return {a: 1, b: 0, c: -x};
+  return { a: 1, b: 0, c: -x };
 }
 
 export function linePassingThroughTwoPoints(x1, y1, x2, y2) {
-  if (x1 === x2 && y1 == y2) throw new Error('Geometry error');
-  if (x1 === x2) return verticalLine(x);
+  if (x1 === x2 && y1 == y2) throw new Error("Geometry error");
+  if (x1 === x2) return verticalLine(x1);
   if (y1 === y2) return horizontalLine(y1);
 
   return {
     a: y1 - y2,
     b: x2 - x1,
-    c: y2 * x1 - x2 * y1
+    c: y2 * x1 - x2 * y1,
   };
 }
 
@@ -69,8 +68,8 @@ export function closestPointFromLine(a, b, c, x, y) {
   let denom = a * a + b * b;
   return {
     x: (b * (b * x - a * y) - a * c) / denom,
-    y: ((a * -b * x + a * y) - b * c) / denom,
-  }
+    y: (a * -b * x + a * y - b * c) / denom,
+  };
 }
 
 /** @description Get point of intersection between two lines using ax+by+c line's equation
@@ -83,57 +82,63 @@ export function closestPointFromLine(a, b, c, x, y) {
  *  @return {object} {x,y} point's coordinates
  */
 export function twoLinesIntersection(a, b, c, j, k, l) {
-  let angularCoefficientsDiff = (b * j - a * k);
+  let angularCoefficientsDiff = b * j - a * k;
 
   if (angularCoefficientsDiff === 0) return undefined; //no intersection
 
   let y = (a * l - c * j) / angularCoefficientsDiff;
   let x = (c * k - b * l) / angularCoefficientsDiff;
-  return {x, y};
+  return { x, y };
 }
 
 export function twoLineSegmentsIntersection(p1, p2, p3, p4) {
   //https://github.com/psalaets/line-intersect/blob/master/lib/check-intersection.js
 
-  let {x: x1, y: y1} = p1;
-  let {x: x2, y: y2} = p2;
-  let {x: x3, y: y3} = p3;
-  let {x: x4, y: y4} = p4;
+  let { x: x1, y: y1 } = p1;
+  let { x: x2, y: y2 } = p2;
+  let { x: x3, y: y3 } = p3;
+  let { x: x4, y: y4 } = p4;
 
-  let denom = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
-  let numA = ((x4 - x3) * (y1 - y3)) - ((y4 - y3) * (x1 - x3));
-  let numB = ((x2 - x1) * (y1 - y3)) - ((y2 - y1) * (x1 - x3));
+  let denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+  let numA = (x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3);
+  let numB = (x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3);
 
   if (fAbs(denom) <= EPSILON) {
     if (fAbs(numA) <= EPSILON && fAbs(numB) <= EPSILON) {
-
-      let comparator = (pa, pb) => pa.x === pb.x ? pa.y - pb.y : pa.x - pb.x;
+      let comparator = (pa, pb) => (pa.x === pb.x ? pa.y - pb.y : pa.x - pb.x);
       let line0 = [p1, p2].sort(comparator);
       let line1 = [p3.toJS(), p4.toJS()].sort(comparator);
 
-      let [lineSX, lineDX] = [line0, line1].sort((lineA, lineB) => comparator(lineA[0], lineB[0]));
+      let [lineSX, lineDX] = [line0, line1].sort((lineA, lineB) =>
+        comparator(lineA[0], lineB[0])
+      );
 
       if (lineSX[1].x === lineDX[0].x) {
-        return {type: (lineDX[0].y <= lineSX[1].y) ? 'colinear' : 'none'};
+        return { type: lineDX[0].y <= lineSX[1].y ? "colinear" : "none" };
       } else {
-        return {type: (lineDX[0].x <= lineSX[1].x) ? 'colinear' : 'none'};
+        return { type: lineDX[0].x <= lineSX[1].x ? "colinear" : "none" };
       }
     }
-    return {type: 'parallel'};
+    return { type: "parallel" };
   }
 
   let uA = numA / denom;
   let uB = numB / denom;
 
-  if (uA >= (0 - EPSILON) && uA <= (1 + EPSILON) && uB >= (0 - EPSILON) && uB <= (1 + EPSILON)) {
+  if (
+    uA >= 0 - EPSILON &&
+    uA <= 1 + EPSILON &&
+    uB >= 0 - EPSILON &&
+    uB <= 1 + EPSILON
+  ) {
     let point = {
-      x: x1 + (uA * (x2 - x1)),
-      y: y1 + (uA * (y2 - y1))
+      x: x1 + uA * (x2 - x1),
+      y: y1 + uA * (y2 - y1),
     };
-    return {type: 'intersecting', point};
+    return { type: "intersecting", point };
   }
 
-  return {type: 'none'};
+  return { type: "none" };
 }
 
 export function distancePointFromLineSegment(x1, y1, x2, y2, xp, yp) {
@@ -147,7 +152,8 @@ export function distancePointFromLineSegment(x1, y1, x2, y2, xp, yp) {
   let dot = A * C + B * D;
   let len_sq = C * C + D * D;
   let param = -1;
-  if (len_sq != 0) //in case of 0 length line
+  if (len_sq != 0)
+    //in case of 0 length line
     param = dot / len_sq;
 
   let xx, yy;
@@ -155,12 +161,10 @@ export function distancePointFromLineSegment(x1, y1, x2, y2, xp, yp) {
   if (param < 0) {
     xx = x1;
     yy = y1;
-  }
-  else if (param > 1) {
+  } else if (param > 1) {
     xx = x2;
     yy = y2;
-  }
-  else {
+  } else {
     xx = x1 + param * C;
     yy = y1 + param * D;
   }
@@ -181,13 +185,21 @@ export function distancePointFromLineSegment(x1, y1, x2, y2, xp, yp) {
  * @param maxDistance {number} the epsilon value used for comparisons
  * @returns {boolean} true if the point lies on the line segment false otherwise
  */
-export function isPointOnLineSegment(x1, y1, x2, y2, xp, yp, maxDistance = EPSILON) {
+export function isPointOnLineSegment(
+  x1,
+  y1,
+  x2,
+  y2,
+  xp,
+  yp,
+  maxDistance = EPSILON
+) {
   return distancePointFromLineSegment(x1, y1, x2, y2, xp, yp) <= maxDistance;
 }
 
 export function closestPointFromLineSegment(x1, y1, x2, y2, xp, yp) {
-  if (x1 === x2) return {x: x1, y: yp};
-  if (y1 === y2) return {x: xp, y: y1};
+  if (x1 === x2) return { x: x1, y: yp };
+  if (y1 === y2) return { x: xp, y: y1 };
 
   let m = (y2 - y1) / (x2 - x1);
   let q = y1 - m * x1;
@@ -196,9 +208,9 @@ export function closestPointFromLineSegment(x1, y1, x2, y2, xp, yp) {
   let qi = yp - mi * xp;
 
   let x = (qi - q) / (m - mi);
-  let y = (m * x + q);
+  let y = m * x + q;
 
-  return {x, y};
+  return { x, y };
 }
 
 export function pointPositionOnLineSegment(x1, y1, x2, y2, xp, yp) {
@@ -212,11 +224,11 @@ export function pointPositionOnLineSegment(x1, y1, x2, y2, xp, yp) {
 }
 
 export function mapRange(value, low1, high1, low2, high2) {
-  return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+  return low2 + ((high2 - low2) * (value - low1)) / (high1 - low1);
 }
 
 export function angleBetweenTwoPointsAndOrigin(x1, y1, x2, y2) {
-  return -(Math.atan2(y1 - y2, x2 - x1)) * 180 / Math.PI;
+  return (-Math.atan2(y1 - y2, x2 - x1) * 180) / Math.PI;
 }
 
 export function angleBetweenTwoPoints(x1, y1, x2, y2) {
@@ -227,7 +239,7 @@ export function absAngleBetweenTwoPoints(x1, y1, x2, y2) {
   return Math.atan2(Math.abs(y2 - y1), Math.abs(x2 - x1));
 }
 
-export function samePoints({x: x1, y: y1}, {x: x2, y: y2}) {
+export function samePoints({ x: x1, y: y1 }, { x: x2, y: y2 }) {
   return fAbs(x1 - x2) <= EPSILON && fAbs(y1 - y2) <= EPSILON;
 }
 
@@ -240,17 +252,17 @@ export function samePoints({x: x1, y: y1}, {x: x2, y: y2}) {
  *  @return {object}
  */
 export function extendLine(x1, y1, x2, y2, newDistance, precision = 6) {
-  let rad = angleBetweenTwoPoints( x1, y1, x2, y2 );
+  let rad = angleBetweenTwoPoints(x1, y1, x2, y2);
 
   return {
-    x: toFixedFloat(x1 + (Math.cos(rad) * newDistance), precision),
-    y: toFixedFloat(y1 + (Math.sin(rad) * newDistance), precision),
+    x: toFixedFloat(x1 + Math.cos(rad) * newDistance, precision),
+    y: toFixedFloat(y1 + Math.sin(rad) * newDistance, precision),
   };
 }
 
 export function roundVertex(vertex, precision = 6) {
-  vertex.set('x', toFixedFloat(vertex.get('x'), precision));
-  vertex.set('y', toFixedFloat(vertex.get('y'), precision));
+  vertex.set("x", toFixedFloat(vertex.get("x"), precision));
+  vertex.set("y", toFixedFloat(vertex.get("y"), precision));
 
   return vertex;
 }
@@ -283,17 +295,17 @@ export function ContainsPoint(polygon, pointX, pointY) {
     ay = by;
     bx = polygon[2 * i] - pointX;
     by = polygon[2 * i + 1] - pointY;
-    if (ay < 0 && by < 0) continue;  // both 'up' or both 'down'
-    if (ay > 0 && by > 0) continue;  // both 'up' or both 'down'
-    if (ax < 0 && bx < 0) continue;   // both points on the left
+    if (ay < 0 && by < 0) continue; // both 'up' or both 'down'
+    if (ay > 0 && by > 0) continue; // both 'up' or both 'down'
+    if (ax < 0 && bx < 0) continue; // both points on the left
 
     if (ay === by && Math.min(ax, bx) < 0) return true;
     if (ay === by) continue;
 
-    let lx = ax + (bx - ax) * (-ay) / (by - ay);
-    if (lx === 0) return false;      // point on edge
+    let lx = ax + ((bx - ax) * -ay) / (by - ay);
+    if (lx === 0) return false; // point on edge
     if (lx > 0) depth++;
-    if (ay === 0 && lup && by > ay) depth--;  // hit vertex, both up
+    if (ay === 0 && lup && by > ay) depth--; // hit vertex, both up
     if (ay === 0 && !lup && by < ay) depth--; // hit vertex, both down
     lup = by > ay;
   }
@@ -310,28 +322,31 @@ export function sinWithThreshold(alpha, threshold) {
   return sin < threshold ? 0 : sin;
 }
 
-export function midPoint( x1, y1, x2, y2 ) {
-  return { x: (x1+x2)/2, y: (y1+y2)/2 };
+export function midPoint(x1, y1, x2, y2) {
+  return { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
 }
 
-export function verticesMidPoint( verticesArray ) {
-  let res = verticesArray.reduce( ( incr, vertex ) => { return { x: incr.x + vertex.x, y: incr.y + vertex.y } }, { x: 0, y: 0 });
+export function verticesMidPoint(verticesArray) {
+  let res = verticesArray.reduce(
+    (incr, vertex) => {
+      return { x: incr.x + vertex.x, y: incr.y + vertex.y };
+    },
+    { x: 0, y: 0 }
+  );
   return { x: res.x / verticesArray.length, y: res.y / verticesArray.length };
 }
 
-export function rotatePointAroundPoint( px, py, ox, oy, theta ) {
+export function rotatePointAroundPoint(px, py, ox, oy, theta) {
+  let thetaRad = (theta * Math.PI) / 180;
 
-  let thetaRad = theta * Math.PI / 180;
-
-  let cos = Math.cos( thetaRad );
-  let sin = Math.sin( thetaRad );
+  let cos = Math.cos(thetaRad);
+  let sin = Math.sin(thetaRad);
 
   let deltaX = px - ox;
   let deltaY = py - oy;
 
   return {
     x: cos * deltaX - sin * deltaY + ox,
-    y: sin * deltaX + cos * deltaY + oy
+    y: sin * deltaX + cos * deltaY + oy,
   };
-
 }
