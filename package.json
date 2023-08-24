@@ -10,8 +10,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mapbox/react-range": "^0.0.7",
+    "area-polygon": "^1.0.1",
+    "convert-units": "^2.3.4",
+    "immutable": "^4.3.3",
+    "immutablediff": "^0.4.4",
+    "immutablepatch": "^0.5.0",
+    "polylabel": "^1.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.10.1",
+    "react-redux": "^8.1.2",
+    "react-svg-pan-zoom": "^3.12.1",
+    "react-tabs": "^6.0.2",
+    "redux": "^4.2.1",
+    "shortid": "^2.2.16",
+    "three": "^0.155.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

@@ -1,9 +1,3 @@
-import * as TabsStyle from './tabs.css';
+import * as TabsStyle from "./tabs.css?inline";
 
-export {
-  TabsStyle
-};
-
-export default {
-  TabsStyle
-};
+export default TabsStyle;
